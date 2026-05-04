@@ -20,7 +20,7 @@ const LEVEL_CHANNEL_ID = "1494581022896029726";
 const levels = {};
 
 client.once("ready", () => {
-  console.log(`🔥 Logged in as ${client.user.tag}`);
+  console.log(`Logged in as ${client.user.tag}`);
 });
 
 client.on("messageCreate", async (message) => {
@@ -28,7 +28,7 @@ client.on("messageCreate", async (message) => {
 
   const msg = message.content.trim().toLowerCase();
 
-  // ================== نظام اللفل ==================
+  // ===== نظام اللفل =====
   const words = message.content.trim().split(/\s+/).filter(Boolean);
 
   if (!levels[message.author.id]) {
@@ -43,30 +43,31 @@ client.on("messageCreate", async (message) => {
 
     const ch = message.guild.channels.cache.get(LEVEL_CHANNEL_ID);
     if (ch) {
-      ch.send(`🎉 مبروك ${message.author} وصلت Level ${levels[message.author.id].level} 🔥`);
+      ch.send(`مبروك ${message.author} وصلت لفل ${levels[message.author.id].level}`);
     }
   }
 
-  // ================== خط ==================
+  // ===== خط =====
   if (msg === "خط") {
     return message.channel.send(LINE_IMAGE);
   }
 
-  // ================== لفلي ==================
+  // ===== لفلي =====
   if (msg === "لفلي") {
-    const data = levels[message.author.id];
+    const data = levels[message.author.id] || { xp: 0, level: 0 };
     return message.channel.send(
-      📊 لفلك: ${data.level}\n📝 التقدم: ${data.xp}/50 كلمة
+      لفلك: ${data.level}\nالتقدم: ${data.xp}/50 كلمة
     );
   }
 
-  // ================== قوانين ==================
+  // ===== قوانين =====
   if (msg === "قوانين") {
     const embed = new EmbedBuilder()
       .setColor(0x6c2cff)
-      .setTitle("📜 قوانين سيرفر R7")
-      .setDescription("اختر قسم القوانين من القائمة 👇")
-      .setImage(LINE_IMAGE);
+      .setTitle("قوانين سيرفر R7")
+      .setDescription("اختر قسم القوانين من القائمة")
+      .setImage(LINE_IMAGE)
+      .setFooter({ text: "SERVER R7 | Rules Panel" });
 
     const menu = new StringSelectMenuBuilder()
       .setCustomId("rules_menu")
@@ -86,54 +87,49 @@ client.on("messageCreate", async (message) => {
   }
 });
 
-// ================== القوانين الطويلة ==================
+// ===== القوانين الطويلة =====
 const rules = {
+  general:
+`القوانين العامة
 
-general:
-`📖 القوانين العامة | R7
-
-1- الاحترام واجب على جميع الأعضاء بدون استثناء.
-2- يمنع السب أو الشتم أو التنمر أو العنصرية بأي شكل.
-3- يمنع نشر أي محتوى غير لائق أو مخالف للذوق العام.
-4- يمنع انتحال شخصية أي عضو أو إداري أو بوت.
-5- يمنع إثارة المشاكل أو الفتن داخل السيرفر.
-6- يمنع الاستفزاز أو التقليل من الآخرين.
-7- يمنع نشر أو طلب معلومات شخصية.
-8- يمنع التهديد بأي شكل من الأشكال.
-9- يمنع التخريب أو الإزعاج المتعمد.
-10- يمنع نشر محتوى +18 أو محتوى صادم.
+1- الاحترام واجب على الجميع بدون استثناء.
+2- يمنع السب أو الشتم أو العنصرية.
+3- يمنع نشر محتوى غير لائق.
+4- يمنع انتحال شخصية أي عضو.
+5- يمنع إثارة المشاكل.
+6- يمنع الاستفزاز.
+7- يمنع نشر معلومات شخصية.
+8- يمنع التهديد.
+9- يمنع التخريب.
+10- يمنع نشر محتوى صادم.
 11- يمنع الترويج بدون إذن.
-12- الالتزام بتعليمات الإدارة إلزامي.
-13- الإدارة لها الحق في اتخاذ القرار المناسب.
-14- تكرار المخالفات يؤدي لعقوبات أقوى.
+12- الالتزام بتعليمات الإدارة.
+13- الإدارة لها القرار النهائي.
+14- تكرار المخالفات يؤدي لعقوبات.
 15- يمنع استغلال الثغرات.
 16- يمنع نشر الشائعات.
 17- يمنع الإزعاج في الخاص.
-18- يمنع قلة الاحترام للإدارة.
-19- دخولك السيرفر = موافقة على القوانين.
+18- احترام الإدارة واجب.
+19- دخولك السيرفر = موافقة.`,
 
-🔥 خلك راقي.`,
-
-chat:
-`💬 قوانين الشات | R7
+  chat:
+`قوانين الشات
 
 1- يمنع السبام.
 2- يمنع المنشن العشوائي.
-3- يمنع نشر روابط بدون إذن.
+3- يمنع الروابط بدون إذن.
 4- يمنع الإعلانات.
 5- التزم بموضوع الروم.
 6- لا تستفز.
-7- لا تنشر محتوى غير لائق.
+7- لا تنشر محتوى سيء.
 8- احترم الجميع.
-9- لا تكرر.
+9- لا تكرر الرسائل.
 10- لا تخرب الشات.
 11- لا سب.
-12- لا إزعاج.
+12- لا إزعاج.`,
 
-🔥 شات نظيف.`,
-
-voice:
-`🎧 قوانين الفويس | R7
+  voice:
+`قوانين الفويس
 
 1- لا صراخ.
 2- لا إزعاج.
@@ -141,34 +137,28 @@ voice:
 4- لا تسجيل بدون إذن.
 5- لا تخريب.
 6- التزم بالهدوء.
-7- الإدارة لها الحق تطلعك.
+7- الإدارة لها الحق بإخراجك.`,
 
-🔥 استمتع بدون تخريب.`,
-
-security:
-`🛡️ قوانين الأمن | R7
+  security:
+`قوانين الأمن
 
 1- لا روابط خبيثة.
 2- لا تهكير.
 3- لا نصب.
 4- لا تشارك معلوماتك.
 5- لا تستغل البوت.
-6- أي محاولة اختراق = باند.
+6- أي محاولة اختراق = باند.`,
 
-🔥 الأمان مهم.`,
-
-staff:
-`👑 قوانين الإدارة | R7
+  staff:
+`قوانين الإدارة
 
 1- لا تستغل الصلاحيات.
 2- كن عادل.
-3- احترم الجميع.4- لا تعطي رتب بدون سبب.
-5- القرار للأونر.
-
-🔥 إدارة قوية.`
+3- احترم الجميع.
+4- لا تعطي رتب بدون سبب.
+5- القرار للأونر.`
 };
 
-// ================== القائمة ==================
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isStringSelectMenu()) return;
   if (interaction.customId !== "rules_menu") return;
@@ -178,7 +168,9 @@ client.on("interactionCreate", async (interaction) => {
     .setDescription(rules[interaction.values[0]])
     .setImage(LINE_IMAGE);
 
-  interaction.reply({ embeds: [embed], ephemeral: true });
+  return interaction.reply({
+    embeds: [embed],ephemeral: true
+  });
 });
 
 client.login(process.env.DISCORD_TOKEN);
