@@ -23,81 +23,50 @@ client.once("ready", () => {
   console.log(`🔥 Logged in as ${client.user.tag}`);
 });
 
-// ================== الأوامر + اللفل ==================
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
 
   const msg = message.content.trim().toLowerCase();
 
-  // 🆙 نظام اللفل: كل 50 كلمة = لفل
+  // ================== نظام اللفل ==================
   const words = message.content.trim().split(/\s+/).filter(Boolean);
 
-  if (words.length > 0 && msg !== "خط" && msg !== "قوانين") {
-    const userId = message.author.id;
+  if (!levels[message.author.id]) {
+    levels[message.author.id] = { xp: 0, level: 0 };
+  }
 
-    if (!levels[userId]) {
-      levels[userId] = {
-        words: 0,
-        level: 0
-      };
-    }
+  levels[message.author.id].xp += words.length;
 
-    levels[userId].words += words.length;
+  while (levels[message.author.id].xp >= 50) {
+    levels[message.author.id].xp -= 50;
+    levels[message.author.id].level++;
 
-    while (levels[userId].words >= 50) {
-      levels[userId].words -= 50;
-      levels[userId].level += 1;
-
-      const levelChannel = message.guild.channels.cache.get(LEVEL_CHANNEL_ID);
-
-      if (levelChannel) {
-        const embed = new EmbedBuilder()
-          .setColor(0x6c2cff)
-          .setTitle("🎉 لفل جديد!")
-          .setDescription(
-            🔥 مبروك ${message.author}\n +
-            وصلت إلى **Level ${levels[userId].level}**\n\n +
-            استمر يا وحش 😈
-          )
-          .setFooter({ text: "SERVER R7 | Level System" });
-
-        levelChannel.send({ embeds: [embed] });
-      }
+    const ch = message.guild.channels.cache.get(LEVEL_CHANNEL_ID);
+    if (ch) {
+      ch.send(`🎉 مبروك ${message.author} وصلت Level ${levels[message.author.id].level} 🔥`);
     }
   }
 
-  // 🔥 خط (رسالة عادية)
+  // ================== خط ==================
   if (msg === "خط") {
     return message.channel.send(LINE_IMAGE);
   }
 
-  // 📊 لفلي
+  // ================== لفلي ==================
   if (msg === "لفلي") {
-    const data = levels[message.author.id] || { words: 0, level: 0 };
-    const remaining = 50 - data.words;
-
-    const embed = new EmbedBuilder()
-      .setColor(0x6c2cff)
-      .setTitle("📊 مستواك")
-      .setDescription(
-        ${message.author}\n\n +
-        🔥 المستوى: **${data.level}**\n +
-        📝 الكلمات الحالية: **${data.words}/50**\n +
-        ⏳ باقي لك: **${remaining} كلمة** للمستوى القادم
-      )
-      .setFooter({ text: "SERVER R7 | Level System" });
-
-    return message.channel.send({ embeds: [embed] });
+    const data = levels[message.author.id];
+    return message.channel.send(
+      📊 لفلك: ${data.level}\n📝 التقدم: ${data.xp}/50 كلمة
+    );
   }
 
-  // 🔥 قوانين
+  // ================== قوانين ==================
   if (msg === "قوانين") {
     const embed = new EmbedBuilder()
       .setColor(0x6c2cff)
       .setTitle("📜 قوانين سيرفر R7")
       .setDescription("اختر قسم القوانين من القائمة 👇")
-      .setImage(LINE_IMAGE)
-      .setFooter({ text: "SERVER R7 | Rules Panel" });
+      .setImage(LINE_IMAGE);
 
     const menu = new StringSelectMenuBuilder()
       .setCustomId("rules_menu")
@@ -119,7 +88,8 @@ client.on("messageCreate", async (message) => {
 
 // ================== القوانين الطويلة ==================
 const rules = {
-  general:
+
+general:
 `📖 القوانين العامة | R7
 
 1- الاحترام واجب على جميع الأعضاء بدون استثناء.
@@ -132,98 +102,70 @@ const rules = {
 8- يمنع التهديد بأي شكل من الأشكال.
 9- يمنع التخريب أو الإزعاج المتعمد.
 10- يمنع نشر محتوى +18 أو محتوى صادم.
-11- يمنع الترويج لسيرفرات أو حسابات بدون إذن.
+11- يمنع الترويج بدون إذن.
 12- الالتزام بتعليمات الإدارة إلزامي.
 13- الإدارة لها الحق في اتخاذ القرار المناسب.
 14- تكرار المخالفات يؤدي لعقوبات أقوى.
-15- يمنع استغلال الثغرات أو البوتات.16- يمنع نشر الشائعات أو الأخبار الكاذبة.
+15- يمنع استغلال الثغرات.
+16- يمنع نشر الشائعات.
 17- يمنع الإزعاج في الخاص.
-18- يمنع تقليل الاحترام للإدارة.
+18- يمنع قلة الاحترام للإدارة.
 19- دخولك السيرفر = موافقة على القوانين.
 
-🔥 خلك راقي وخل سيرفر R7 نظيف.`,
+🔥 خلك راقي.`,
 
-  chat:
+chat:
 `💬 قوانين الشات | R7
 
-1- يمنع السبام أو تكرار الرسائل.
-2- يمنع المنشن العشوائي للأعضاء أو الإدارة.
+1- يمنع السبام.
+2- يمنع المنشن العشوائي.
 3- يمنع نشر روابط بدون إذن.
-4- يمنع الإعلانات أو الترويج.
-5- التزم بموضوع كل روم.
-6- يمنع الاستفزاز أو إثارة المشاكل.
-7- يمنع إرسال محتوى غير لائق.
-8- استخدم أسلوب محترم.
-9- يمنع الكتابة بحروف مزعجة.
-10- يمنع نشر محتوى مكرر.
-11- يمنع النقاشات السامة.
-12- يمنع نشر صور غير مناسبة.
-13- يمنع التخريب في الرومات.
-14- يمنع السب بين الأعضاء.
-15- أي مخالفة = ميوت.
+4- يمنع الإعلانات.
+5- التزم بموضوع الروم.
+6- لا تستفز.
+7- لا تنشر محتوى غير لائق.
+8- احترم الجميع.
+9- لا تكرر.
+10- لا تخرب الشات.
+11- لا سب.
+12- لا إزعاج.
 
-🔥 شات نظيف = مجتمع قوي.`,
+🔥 شات نظيف.`,
 
-  voice:
+voice:
 `🎧 قوانين الفويس | R7
 
-1- يمنع الصراخ أو الإزعاج.
-2- يمنع تشغيل أصوات مزعجة.
-3- احترام الموجودين واجب.
-4- يمنع المقاطعة المتعمدة.
-5- يمنع تشغيل موسيقى بدون إذن.
-6- يمنع تسجيل الصوت بدون موافقة.
-7- يمنع الدخول والخروج للإزعاج.
-8- يمنع التخريب داخل الروم.
-9- يمنع استخدام مؤثرات مزعجة.
-10- الالتزام بالهدوء.
-11- الإدارة لها حق إخراجك.
-12- أي إزعاج = عقوبة.
-13- لا تزعج الآخرين.
-14- كن محترم دائمًا.
+1- لا صراخ.
+2- لا إزعاج.
+3- احترم الموجودين.
+4- لا تسجيل بدون إذن.
+5- لا تخريب.
+6- التزم بالهدوء.
+7- الإدارة لها الحق تطلعك.
 
 🔥 استمتع بدون تخريب.`,
 
-  security:
+security:
 `🛡️ قوانين الأمن | R7
 
-1- يمنع نشر روابط خبيثة.
-2- يمنع إرسال ملفات غير موثوقة.
-3- يمنع النصب أو الاحتيال.
+1- لا روابط خبيثة.
+2- لا تهكير.
+3- لا نصب.
 4- لا تشارك معلوماتك.
-5- يمنع محاولة التهكير.
-6- يمنع استغلال البوتات.
-7- لا تثق بروابط غريبة.
-8- الإبلاغ عن المخالفين واجب.
-9- حماية حسابك مسؤوليتك.
-10- يمنع نشر بيانات حساسة.
-11- لا ترسل أكواد تحقق.
-12- لا تدخل مواقع مشبوهة.
-13- أي تهديد = باند مباشر.
-14- الأمن أولًا.
+5- لا تستغل البوت.
+6- أي محاولة اختراق = باند.
 
-🔥 احمي نفسك.`,
+🔥 الأمان مهم.`,
 
-  staff:
+staff:
 `👑 قوانين الإدارة | R7
 
-1- الإدارة تمثل السيرفر.
-2- يمنع استغلال الصلاحيات.
-3- يمنع إعطاء رتب بدون سبب.
-4- التعامل بعدل مع الجميع.
-5- الرد بأسلوب محترم.
-6- يمنع الظلم.
-7- أي خطأ = محاسبة.
-8- يمنع التهديد بالرتبة.
-9- احترام الأعضاء واجب.
-10- القرار النهائي للأونر.
-11- لا تحذف بدون سبب.
-12- لا تسيء استخدام البوت.
-13- كن قدوة.
-14- الالتزام مهم.
-15- الإدارة مسؤولية.
+1- لا تستغل الصلاحيات.
+2- كن عادل.
+3- احترم الجميع.4- لا تعطي رتب بدون سبب.
+5- القرار للأونر.
 
-🔥 إدارة قوية = سيرفر قوي.`
+🔥 إدارة قوية.`
 };
 
 // ================== القائمة ==================
@@ -236,10 +178,7 @@ client.on("interactionCreate", async (interaction) => {
     .setDescription(rules[interaction.values[0]])
     .setImage(LINE_IMAGE);
 
-  return interaction.reply({
-    embeds: [embed],
-    ephemeral: true
-  });
+  interaction.reply({ embeds: [embed], ephemeral: true });
 });
 
 client.login(process.env.DISCORD_TOKEN);
