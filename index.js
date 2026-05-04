@@ -15,20 +15,79 @@ const client = new Client({
 });
 
 const LINE_IMAGE = "https://cdn.discordapp.com/attachments/1481671050671427746/1500463419353206834/59FFD92D-2656-4D2D-BB91-7B9DFD3F2724.png";
+const LEVEL_CHANNEL_ID = "1494581022896029726";
+
+const levels = {};
 
 client.once("ready", () => {
   console.log(`🔥 Logged in as ${client.user.tag}`);
 });
 
-// ================== الأوامر ==================
+// ================== الأوامر + اللفل ==================
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
 
   const msg = message.content.trim().toLowerCase();
 
+  // 🆙 نظام اللفل: كل 50 كلمة = لفل
+  const words = message.content.trim().split(/\s+/).filter(Boolean);
+
+  if (words.length > 0 && msg !== "خط" && msg !== "قوانين") {
+    const userId = message.author.id;
+
+    if (!levels[userId]) {
+      levels[userId] = {
+        words: 0,
+        level: 0
+      };
+    }
+
+    levels[userId].words += words.length;
+
+    while (levels[userId].words >= 50) {
+      levels[userId].words -= 50;
+      levels[userId].level += 1;
+
+      const levelChannel = message.guild.channels.cache.get(LEVEL_CHANNEL_ID);
+
+      if (levelChannel) {
+        const embed = new EmbedBuilder()
+          .setColor(0x6c2cff)
+          .setTitle("🎉 لفل جديد!")
+          .setDescription(
+            🔥 مبروك ${message.author}\n +
+            وصلت إلى **Level ${levels[userId].level}**\n\n +
+            استمر يا وحش 😈
+          )
+          .setFooter({ text: "SERVER R7 | Level System" });
+
+        levelChannel.send({ embeds: [embed] });
+      }
+    }
+  }
+
   // 🔥 خط (رسالة عادية)
   if (msg === "خط") {
     return message.channel.send(LINE_IMAGE);
+  }
+
+  // 📊 لفلي
+  if (msg === "لفلي") {
+    const data = levels[message.author.id] || { words: 0, level: 0 };
+    const remaining = 50 - data.words;
+
+    const embed = new EmbedBuilder()
+      .setColor(0x6c2cff)
+      .setTitle("📊 مستواك")
+      .setDescription(
+        ${message.author}\n\n +
+        🔥 المستوى: **${data.level}**\n +
+        📝 الكلمات الحالية: **${data.words}/50**\n +
+        ⏳ باقي لك: **${remaining} كلمة** للمستوى القادم
+      )
+      .setFooter({ text: "SERVER R7 | Level System" });
+
+    return message.channel.send({ embeds: [embed] });
   }
 
   // 🔥 قوانين
@@ -60,8 +119,7 @@ client.on("messageCreate", async (message) => {
 
 // ================== القوانين الطويلة ==================
 const rules = {
-
-general:
+  general:
 `📖 القوانين العامة | R7
 
 1- الاحترام واجب على جميع الأعضاء بدون استثناء.
@@ -78,15 +136,14 @@ general:
 12- الالتزام بتعليمات الإدارة إلزامي.
 13- الإدارة لها الحق في اتخاذ القرار المناسب.
 14- تكرار المخالفات يؤدي لعقوبات أقوى.
-15- يمنع استغلال الثغرات أو البوتات.
-16- يمنع نشر الشائعات أو الأخبار الكاذبة.
+15- يمنع استغلال الثغرات أو البوتات.16- يمنع نشر الشائعات أو الأخبار الكاذبة.
 17- يمنع الإزعاج في الخاص.
 18- يمنع تقليل الاحترام للإدارة.
 19- دخولك السيرفر = موافقة على القوانين.
 
 🔥 خلك راقي وخل سيرفر R7 نظيف.`,
 
-chat:
+  chat:
 `💬 قوانين الشات | R7
 
 1- يمنع السبام أو تكرار الرسائل.
@@ -107,7 +164,7 @@ chat:
 
 🔥 شات نظيف = مجتمع قوي.`,
 
-voice:
+  voice:
 `🎧 قوانين الفويس | R7
 
 1- يمنع الصراخ أو الإزعاج.
@@ -127,7 +184,7 @@ voice:
 
 🔥 استمتع بدون تخريب.`,
 
-security:
+  security:
 `🛡️ قوانين الأمن | R7
 
 1- يمنع نشر روابط خبيثة.
@@ -147,13 +204,14 @@ security:
 
 🔥 احمي نفسك.`,
 
-staff:
+  staff:
 `👑 قوانين الإدارة | R7
 
 1- الإدارة تمثل السيرفر.
 2- يمنع استغلال الصلاحيات.
 3- يمنع إعطاء رتب بدون سبب.
-4- التعامل بعدل مع الجميع.5- الرد بأسلوب محترم.
+4- التعامل بعدل مع الجميع.
+5- الرد بأسلوب محترم.
 6- يمنع الظلم.
 7- أي خطأ = محاسبة.
 8- يمنع التهديد بالرتبة.
