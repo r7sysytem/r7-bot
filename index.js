@@ -9,15 +9,6 @@ const {
   EmbedBuilder
 } = require("discord.js");
 
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.DirectMessages,
-    GatewayIntentBits.MessageContent
-  ]
-});
-
 const TOKEN = process.env.TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
 const GUILD_ID = process.env.GUILD_ID;
@@ -34,15 +25,26 @@ const rooms = {
 
 const userPosts = new Map();
 
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.DirectMessages,
+    GatewayIntentBits.MessageContent
+  ]
+});
+
 const commands = [
   new SlashCommandBuilder()
-    .setName("تبادل")
+    .setName("exchange")
     .setDescription("نظام التبادل التلقائي"),
 
   new SlashCommandBuilder()
-    .setName("حذف-منشوري")
+    .setName("delete-post")
     .setDescription("حذف منشورك التلقائي")
-].map(command => command.toJSON());
+].map(function(command) {
+  return command.toJSON();
+});
 
 const rest = new REST({ version: "10" }).setToken(TOKEN);
 
@@ -53,28 +55,20 @@ async function registerCommands() {
       { body: commands }
     );
 
-    console.log("تم تسجيل الكوماندات");
+    console.log("Commands registered successfully");
   } catch (error) {
-    console.error(error);
+    console.log(error);
   }
 }
 
-client.once("ready", async () => {
-  console.log(`Logged in as ${client.user.tag}`);
+client.once("ready", async function() {
+  console.log("Logged in as " + client.user.tag);
   await registerCommands();
 });
 
-client.on("interactionCreate", async (interaction) => {
-
-  // =========================
-  // Slash Commands
-  // =========================
-
+client.on("interactionCreate", async function(interaction) {
   if (interaction.isChatInputCommand()) {
-
-    // /تبادل
-    if (interaction.commandName === "تبادل") {
-
+    if (interaction.commandName === "exchange") {
       const menu = new StringSelectMenuBuilder()
         .setCustomId("auto_exchange_menu")
         .setPlaceholder("اختر خياراً...")
@@ -110,7 +104,7 @@ client.on("interactionCreate", async (interaction) => {
 
       const embed = new EmbedBuilder()
         .setTitle("نظام المنشورات التلقائي")
-        .setDescription("لنشر منشورك أو معرفة منشوراتك اضغط القائمة بالأسفل")
+        .setDescription("لنشر منشورك أو معرفة منشوراتك وحدود النشر اضغط القائمة بالأسفل")
         .setColor("#8b5cf6");
 
       return interaction.reply({
@@ -119,9 +113,7 @@ client.on("interactionCreate", async (interaction) => {
       });
     }
 
-    // /حذف-منشوري
-    if (interaction.commandName === "حذف-منشوري") {
-
+    if (interaction.commandName === "delete-post") {
       const post = userPosts.get(interaction.user.id);
 
       if (!post) {
@@ -141,20 +133,11 @@ client.on("interactionCreate", async (interaction) => {
     }
   }
 
-  // =========================
-  // Select Menu
-  // =========================
-
   if (interaction.isStringSelectMenu()) {
-
-    // القائمة الرئيسية
     if (interaction.customId === "auto_exchange_menu") {
-
       const choice = interaction.values[0];
 
-      // إنشاء منشور
       if (choice === "create_post") {
-
         if (!interaction.member.roles.cache.has(AUTO_ROLE_ID)) {
           return interaction.reply({
             content: "❌ ما عندك رتبة التبادل التلقائي.",
@@ -164,21 +147,23 @@ client.on("interactionCreate", async (interaction) => {
 
         if (userPosts.has(interaction.user.id)) {
           return interaction.reply({
-            content: "❌ عندك منشور تلقائي بالفعل. استخدم /حذف-منشوري",
+            content: "❌ عندك منشور تلقائي بالفعل. استخدم /delete-post",
             ephemeral: true
           });
         }
 
+        const roomOptions = Object.entries(rooms).map(function(entry) {
+          return {
+            label: entry[0],
+            value: entry[1],
+            emoji: "🌐"
+          };
+        });
+
         const roomMenu = new StringSelectMenuBuilder()
           .setCustomId("choose_auto_room")
           .setPlaceholder("اختر روم")
-          .addOptions(
-            Object.entries(rooms).map(([name, id]) => ({
-              label: name,
-              value: id,
-              emoji: "🌐"
-            }))
-          );
+          .addOptions(roomOptions);
 
         const row = new ActionRowBuilder().addComponents(roomMenu);
 
@@ -189,9 +174,7 @@ client.on("interactionCreate", async (interaction) => {
         });
       }
 
-      // منشوراتك الخاصة
       if (choice === "my_posts") {
-
         const post = userPosts.get(interaction.user.id);
 
         if (!post) {
@@ -202,45 +185,41 @@ client.on("interactionCreate", async (interaction) => {
         }
 
         return interaction.reply({
-          content: 📌 منشورك يعمل في <#${post.channelId}>:\n\n${post.content},
+          content:
+            "📌 منشورك يعمل في <#" +
+            post.channelId +
+            ">:\n\n" +
+            post.content,
           ephemeral: true
         });
       }
 
-      // حدود النشر
       if (choice === "limits") {
-
         return interaction.reply({
           content:
-`📍 حدود النشر:
-
-• لازم معك رتبة التبادل التلقائي
-• منشور واحد فقط لكل عضو
-• يتم النشر كل 12 دقيقة
-• ممنوع السبام أو الروابط المخالفة`,
+            "📍 حدود النشر:\n\n" +
+            "• لازم معك رتبة التبادل التلقائي\n" +
+            "• منشور واحد فقط لكل عضو\n" +
+            "• يتم النشر كل 12 دقيقة\n" +
+            "• ممنوع السبام أو الروابط المخالفة",
           ephemeral: true
         });
       }
 
-      // شرح
       if (choice === "help") {
-
         return interaction.reply({
           content:
-`📖 شرح النظام:
-
-1- اضغط إنشاء منشور
-2- اختر الروم
-3- البوت يرسلك خاص
-4- اكتب منشورك
-5- يتم نشره تلقائياً كل 12 دقيقة`,
+            "📖 شرح النظام:\n\n" +
+            "1- اضغط إنشاء منشور\n" +
+            "2- اختر الروم\n" +
+            "3- البوت يرسلك خاص\n" +
+            "4- اكتب منشورك\n" +
+            "5- يتم نشره تلقائياً كل 12 دقيقة",
           ephemeral: true
         });
       }
 
-      // تحديث
       if (choice === "refresh") {
-
         return interaction.reply({
           content: "✅ تم تحديث القائمة.",
           ephemeral: true
@@ -248,9 +227,7 @@ client.on("interactionCreate", async (interaction) => {
       }
     }
 
-    // اختيار الروم
     if (interaction.customId === "choose_auto_room") {
-
       const channelId = interaction.values[0];
 
       await interaction.reply({
@@ -261,15 +238,9 @@ client.on("interactionCreate", async (interaction) => {
       let dm;
 
       try {
-
         dm = await interaction.user.createDM();
-
-        await dm.send(
-          "📨 أرسل الآن نص المنشور (اختياري صورة) لديك 60 ثانية فقط."
-        );
-
-      } catch {
-
+        await dm.send("📨 أرسل الآن نص المنشور. لديك 60 ثانية فقط.");
+      } catch (error) {
         return interaction.followUp({
           content: "❌ افتح الخاص عشان البوت يقدر يراسلك.",
           ephemeral: true
@@ -277,56 +248,63 @@ client.on("interactionCreate", async (interaction) => {
       }
 
       const collector = dm.createMessageCollector({
-        filter: msg => msg.author.id === interaction.user.id,
+        filter: function(msg) {
+          return msg.author.id === interaction.user.id;
+        },
         max: 1,
         time: 60000
       });
 
-      collector.on("collect", async (msg) => {
-
+      collector.on("collect", async function(msg) {
         const content = msg.content || "بدون نص";
         const attachment = msg.attachments.first();
 
-        const targetChannel = await client.channels.fetch(channelId).catch(() => null);
+        const targetChannel = await client.channels.fetch(channelId).catch(function() {
+          return null;
+        });
 
         if (!targetChannel) {
           return dm.send("❌ الروم غير موجود أو البوت ما عنده صلاحية.");
         }
 
-        // أول نشر
-        await targetChannel.send({
-          content: 📢 منشور من ${interaction.user}\n\n${content},
-          files: attachment ? [attachment.url] : []
-        });
+        const sendData = {
+          content: "📢 منشور من " + interaction.user.toString() + "\n\n" + content
+        };
 
-        // النشر التلقائي
-        const interval = setInterval(async () => {
+        if (attachment) {
+          sendData.files = [attachment.url];
+        }
 
-          const ch = await client.channels.fetch(channelId).catch(() => null);
+        await targetChannel.send(sendData);
+
+        const interval = setInterval(async function() {
+          const ch = await client.channels.fetch(channelId).catch(function() {
+            return null;
+          });
 
           if (!ch) return;
 
-          ch.send({
-            content: 📢 منشور من ${interaction.user}\n\n${content},
-            files: attachment ? [attachment.url] : []
-          }).catch(() => {});
+          const repeatData = {
+            content: "📢 منشور من " + interaction.user.toString() + "\n\n" + content
+          };
 
-        }, 12 * 60 * 1000);
+          if (attachment) {
+            repeatData.files = [attachment.url];
+          }
 
-        // حفظ البيانات
+          ch.send(repeatData).catch(function() {});
+        }, 720000);
+
         userPosts.set(interaction.user.id, {
-          channelId,
-          content,
-          interval
+          channelId: channelId,
+          content: content,
+          interval: interval
         });
 
-        dm.send(
-          ✅ تم حفظ منشورك وسيتم نشره كل 12 دقيقة في <#${channelId}>
-        );
+        dm.send("✅ تم حفظ منشورك وسيتم نشره كل 12 دقيقة في <#" + channelId + ">");
       });
 
-      collector.on("end", collected => {
-
+      collector.on("end", function(collected) {
         if (collected.size === 0) {
           dm.send("⌛ انتهى الوقت، أعد المحاولة من السيرفر.");
         }
