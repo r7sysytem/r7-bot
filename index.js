@@ -1,187 +1,248 @@
 const {
   Client,
   GatewayIntentBits,
-  EmbedBuilder,
+  REST,
+  Routes,
+  SlashCommandBuilder,
   ActionRowBuilder,
-  StringSelectMenuBuilder
+  StringSelectMenuBuilder,
+  EmbedBuilder
 } = require("discord.js");
 
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.DirectMessages
   ]
 });
 
-const LINE_IMAGE = "https://cdn.discordapp.com/attachments/1481671050671427746/1500463419353206834/59FFD92D-2656-4D2D-BB91-7B9DFD3F2724.png";
+const TOKEN = process.env.TOKEN;
+const CLIENT_ID = process.env.CLIENT_ID;
+const GUILD_ID = process.env.GUILD_ID;
 
-client.once("ready", () => {
-  console.log(`🔥 Logged in as ${client.user.tag}`);
-});
+const AUTO_ROLE_ID = "1502228931141697546";
 
-// ================== الأوامر ==================
-client.on("messageCreate", async (message) => {
-  if (message.author.bot) return;
-
-  const msg = message.content.trim().toLowerCase();
-
-  // 🔥 خط (رسالة عادية)
-  if (msg === "خط") {
-    return message.channel.send(LINE_IMAGE);
-  }
-
-  // 🔥 قوانين
-  if (msg === "قوانين") {
-    const embed = new EmbedBuilder()
-      .setColor(0x6c2cff)
-      .setTitle("📜 قوانين سيرفر R7")
-      .setDescription("اختر قسم القوانين من القائمة 👇")
-      .setImage(LINE_IMAGE)
-      .setFooter({ text: "SERVER R7 | Rules Panel" });
-
-    const menu = new StringSelectMenuBuilder()
-      .setCustomId("rules_menu")
-      .setPlaceholder("اختر قسم القوانين")
-      .addOptions(
-        { label: "القوانين العامة", value: "general", emoji: "📖" },
-        { label: "قوانين الشات", value: "chat", emoji: "💬" },
-        { label: "قوانين الفويس", value: "voice", emoji: "🎧" },
-        { label: "قوانين الأمن", value: "security", emoji: "🛡️" },
-        { label: "قوانين الإدارة", value: "staff", emoji: "👑" }
-      );
-
-    return message.channel.send({
-      embeds: [embed],
-      components: [new ActionRowBuilder().addComponents(menu)]
-    });
-  }
-});
-
-// ================== القوانين الطويلة ==================
-const rules = {
-
-general:
-`📖 القوانين العامة | R7
-
-1- الاحترام واجب على جميع الأعضاء بدون استثناء.
-2- يمنع السب أو الشتم أو التنمر أو العنصرية بأي شكل.
-3- يمنع نشر أي محتوى غير لائق أو مخالف للذوق العام.
-4- يمنع انتحال شخصية أي عضو أو إداري أو بوت.
-5- يمنع إثارة المشاكل أو الفتن داخل السيرفر.
-6- يمنع الاستفزاز أو التقليل من الآخرين.
-7- يمنع نشر أو طلب معلومات شخصية.
-8- يمنع التهديد بأي شكل من الأشكال.
-9- يمنع التخريب أو الإزعاج المتعمد.
-10- يمنع نشر محتوى +18 أو محتوى صادم.
-11- يمنع الترويج لسيرفرات أو حسابات بدون إذن.
-12- الالتزام بتعليمات الإدارة إلزامي.
-13- الإدارة لها الحق في اتخاذ القرار المناسب.
-14- تكرار المخالفات يؤدي لعقوبات أقوى.
-15- يمنع استغلال الثغرات أو البوتات.
-16- يمنع نشر الشائعات أو الأخبار الكاذبة.
-17- يمنع الإزعاج في الخاص.
-18- يمنع تقليل الاحترام للإدارة.
-19- دخولك السيرفر = موافقة على القوانين.
-
-🔥 خلك راقي وخل سيرفر R7 نظيف.`,
-
-chat:
-`💬 قوانين الشات | R7
-
-1- يمنع السبام أو تكرار الرسائل.
-2- يمنع المنشن العشوائي للأعضاء أو الإدارة.
-3- يمنع نشر روابط بدون إذن.
-4- يمنع الإعلانات أو الترويج.
-5- التزم بموضوع كل روم.
-6- يمنع الاستفزاز أو إثارة المشاكل.
-7- يمنع إرسال محتوى غير لائق.
-8- استخدم أسلوب محترم.
-9- يمنع الكتابة بحروف مزعجة.
-10- يمنع نشر محتوى مكرر.
-11- يمنع النقاشات السامة.
-12- يمنع نشر صور غير مناسبة.
-13- يمنع التخريب في الرومات.
-14- يمنع السب بين الأعضاء.
-15- أي مخالفة = ميوت.
-
-🔥 شات نظيف = مجتمع قوي.`,
-
-voice:
-`🎧 قوانين الفويس | R7
-
-1- يمنع الصراخ أو الإزعاج.
-2- يمنع تشغيل أصوات مزعجة.
-3- احترام الموجودين واجب.
-4- يمنع المقاطعة المتعمدة.
-5- يمنع تشغيل موسيقى بدون إذن.
-6- يمنع تسجيل الصوت بدون موافقة.
-7- يمنع الدخول والخروج للإزعاج.
-8- يمنع التخريب داخل الروم.
-9- يمنع استخدام مؤثرات مزعجة.
-10- الالتزام بالهدوء.
-11- الإدارة لها حق إخراجك.
-12- أي إزعاج = عقوبة.
-13- لا تزعج الآخرين.
-14- كن محترم دائمًا.
-
-🔥 استمتع بدون تخريب.`,
-
-security:
-`🛡️ قوانين الأمن | R7
-
-1- يمنع نشر روابط خبيثة.
-2- يمنع إرسال ملفات غير موثوقة.
-3- يمنع النصب أو الاحتيال.
-4- لا تشارك معلوماتك.
-5- يمنع محاولة التهكير.
-6- يمنع استغلال البوتات.
-7- لا تثق بروابط غريبة.
-8- الإبلاغ عن المخالفين واجب.
-9- حماية حسابك مسؤوليتك.
-10- يمنع نشر بيانات حساسة.
-11- لا ترسل أكواد تحقق.
-12- لا تدخل مواقع مشبوهة.
-13- أي تهديد = باند مباشر.
-14- الأمن أولًا.
-
-🔥 احمي نفسك.`,
-
-staff:
-`👑 قوانين الإدارة | R7
-
-1- الإدارة تمثل السيرفر.
-2- يمنع استغلال الصلاحيات.
-3- يمنع إعطاء رتب بدون سبب.
-4- التعامل بعدل مع الجميع.5- الرد بأسلوب محترم.
-6- يمنع الظلم.
-7- أي خطأ = محاسبة.
-8- يمنع التهديد بالرتبة.
-9- احترام الأعضاء واجب.
-10- القرار النهائي للأونر.
-11- لا تحذف بدون سبب.
-12- لا تسيء استخدام البوت.
-13- كن قدوة.
-14- الالتزام مهم.
-15- الإدارة مسؤولية.
-
-🔥 إدارة قوية = سيرفر قوي.`
+const rooms = {
+  "تبادل السرقة": "1481344240981246163",
+  "تبادل بلوكس": "1486658062679801937",
+  "تبادل عام": "1486648685898235976",
+  "تبادل المزرعة": "1501227088902881441",
+  "تبادل MM2": "1501227409176006787"
 };
 
-// ================== القائمة ==================
-client.on("interactionCreate", async (interaction) => {
-  if (!interaction.isStringSelectMenu()) return;
-  if (interaction.customId !== "rules_menu") return;
+const userPosts = new Map();
 
-  const embed = new EmbedBuilder()
-    .setColor(0x6c2cff)
-    .setDescription(rules[interaction.values[0]])
-    .setImage(LINE_IMAGE);
+const commands = [
+  new SlashCommandBuilder()
+    .setName("تبادل")
+    .setDescription("إرسال لوحة التبادل التلقائي"),
 
-  return interaction.reply({
-    embeds: [embed],
-    ephemeral: true
-  });
+  new SlashCommandBuilder()
+    .setName("حذف-منشوري")
+    .setDescription("حذف منشورك التلقائي")
+].map(command => command.toJSON());
+
+const rest = new REST({ version: "10" }).setToken(TOKEN);
+
+async function registerCommands() {
+  try {
+    await rest.put(
+      Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
+      { body: commands }
+    );
+    console.log("Slash commands registered.");
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+client.once("ready", async () => {
+  console.log(`Logged in as ${client.user.tag}`);
+  await registerCommands();
 });
 
-client.login(process.env.DISCORD_TOKEN);
+client.on("interactionCreate", async (interaction) => {
+  if (interaction.isChatInputCommand()) {
+    if (interaction.commandName === "تبادل") {
+      const menu = new StringSelectMenuBuilder()
+        .setCustomId("auto_exchange_menu")
+        .setPlaceholder("اختر خياراً...")
+        .addOptions([
+          { label: "إنشاء منشور", value: "create_post", emoji: "📨" },
+          { label: "منشوراتك الخاصة", value: "my_posts", emoji: "📌" },
+          { label: "حدود النشر", value: "limits", emoji: "📍" },
+          { label: "شرح", value: "help", emoji: "📖" },
+          { label: "Refresh", value: "refresh", emoji: "🔄" }
+        ]);
+
+      const embed = new EmbedBuilder()
+        .setTitle("نظام المنشورات التلقائي")
+        .setDescription("لنشر منشورك أو معرفة منشوراتك وحدود النشر، اضغط القائمة بالأسفل.")
+        .setColor("#8b5cf6");
+
+      return interaction.reply({
+        embeds: [embed],
+        components: [new ActionRowBuilder().addComponents(menu)]
+      });
+    }
+
+    if (interaction.commandName === "حذف-منشوري") {
+      const post = userPosts.get(interaction.user.id);
+
+      if (!post) {
+        return interaction.reply({
+          content: "❌ ما عندك منشور تلقائي.",
+          ephemeral: true
+        });
+      }
+
+      clearInterval(post.interval);
+      userPosts.delete(interaction.user.id);
+
+      return interaction.reply({
+        content: "✅ تم حذف منشورك التلقائي.",
+        ephemeral: true
+      });
+    }
+  }
+
+  if (interaction.isStringSelectMenu()) {
+    if (interaction.customId === "auto_exchange_menu") {
+      const choice = interaction.values[0];
+
+      if (choice === "create_post") {
+        if (!interaction.member.roles.cache.has(AUTO_ROLE_ID)) {
+          return interaction.reply({
+            content: "❌ ما عندك رتبة التبادل التلقائي.",
+            ephemeral: true
+          });
+        }
+
+        if (userPosts.has(interaction.user.id)) {
+          return interaction.reply({
+            content: "❌ عندك منشور تلقائي بالفعل. استخدم /حذف-منشوري لحذفه.",
+            ephemeral: true
+          });
+        }
+
+        const roomMenu = new StringSelectMenuBuilder()
+          .setCustomId("choose_auto_room")
+          .setPlaceholder("اختر روم")
+          .addOptions(
+            Object.entries(rooms).map(([name, id]) => ({
+              label: name,
+              value: id,
+              emoji: "🌐"
+            }))
+          );
+
+        return interaction.reply({
+          content: "📌 اختر الروم الذي تريد النشر فيه:",
+          components: [new ActionRowBuilder().addComponents(roomMenu)],
+          ephemeral: true
+        });
+      }
+
+      if (choice === "my_posts") {
+        const post = userPosts.get(interaction.user.id);
+
+        if (!post) {
+          return interaction.reply({
+            content: "❌ ما عندك منشور تلقائي حالياً.",
+            ephemeral: true
+          });
+        }
+
+        return interaction.reply({
+          content: 📌 منشورك يعمل في <#${post.channelId}>:\n\n${post.content},
+          ephemeral: true
+        });
+      }
+
+      if (choice === "limits") {
+        return interaction.reply({
+          content:
+            "📍 حدود النشر:\n• لازم معك رتبة التبادل التلقائي\n• منشور واحد فقط لكل عضو\n• النشر كل 12 دقيقة\n• ممنوع السبام والمخالفات",
+          ephemeral: true
+        });
+      }
+
+      if (choice === "help") {
+        return interaction.reply({
+          content:
+            "📖 الشرح:\n1. اضغط إنشاء منشور\n2. اختر الروم\n3. البوت يرسلك خاص\n4. اكتب منشورك\n5. ينشره كل 12 دقيقة",
+          ephemeral: true
+        });
+      }
+
+      if (choice === "refresh") {
+        return interaction.reply({
+          content: "✅ تم التحديث.",
+          ephemeral: true
+        });
+      }
+    }
+
+    if (interaction.customId === "choose_auto_room") {
+      const channelId = interaction.values[0];
+
+      await interaction.reply({
+        content: "📨 أرسلت لك خاص، اكتب منشورك هناك.",
+        ephemeral: true
+      });
+
+      let dm;
+
+      try {
+        dm = await interaction.user.createDM();
+        await dm.send("📨 أرسل الآن نص المنشور. لديك 60 ثانية فقط.");
+      } catch {
+        return interaction.followUp({
+          content: "❌ افتح الخاص عشان البوت يقدر يراسلك.",
+          ephemeral: true
+        });
+      }
+
+      const collector = dm.createMessageCollector({
+        filter: msg => msg.author.id === interaction.user.id,
+        max: 1,
+        time: 60000
+      });
+
+      collector.on("collect", async (msg) => {
+        const content = msg.content;
+        const targetChannel = await client.channels.fetch(channelId).catch(() => null);
+
+        if (!targetChannel) {
+          return dm.send("❌ الروم غير موجود أو البوت ما عنده صلاحية.");
+        }
+
+        await targetChannel.send(`📢 منشور من ${interaction.user}:\n\n${content}`);
+
+        const interval = setInterval(async () => {
+          const ch = await client.channels.fetch(channelId).catch(() => null);
+          if (!ch) return;
+
+          ch.send(`📢 منشور من ${interaction.user}:\n\n${content}`).catch(() => {});
+        }, 12 * 60 * 1000);
+
+        userPosts.set(interaction.user.id, {
+          channelId,
+          content,
+          interval
+        });
+
+        dm.send(`✅ تم حفظ منشورك، وسيتم نشره كل 12 دقيقة في <#${channelId}>`);
+      });
+
+      collector.on("end", collected => {
+        if (collected.size === 0) {
+          dm.send("⌛ انتهى الوقت، أعد المحاولة من السيرفر.");
+        }
+      });
+    }
+  }
+});
+
+client.login(TOKEN);
