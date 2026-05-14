@@ -23,7 +23,8 @@ const client = new Client({
 });
 
 const WELCOME_CHANNEL_ID = "1481342024891371674";
-const AZKAR_CHANNEL_ID = "1376496339935952896";
+const RULES_CHANNEL_ID = "1481351750634963054";
+const CHAT_CHANNEL_ID = "1376496339935952896";
 
 const WELCOME_BACKGROUND =
   "https://cdn.discordapp.com/attachments/1481671050671427746/1504469636895477760/IMG_0964.jpg?ex=6a071a09&is=6a05c889&hm=8a4c62d8bf86c4c2d0a6e347f3d8af064eaccc61d80aaff8036c1b5dccd19d3c&";
@@ -43,13 +44,19 @@ client.once("ready", function () {
   console.log("Bot online: " + client.user.tag);
 
   setInterval(async function () {
-    const channel = client.channels.cache.get(AZKAR_CHANNEL_ID);
+    const channel = client.channels.cache.get(CHAT_CHANNEL_ID);
     if (!channel) return;
 
     const random =
       azkarList[Math.floor(Math.random() * azkarList.length)];
 
-    channel.send(random).catch(function () {});
+    channel.send(
+      "╭・🌙・تذكير لطيف\n\n" +
+      random +
+      "\n\n🤍 لا تنسون الذكر والصلاة على النبي.\n" +
+      "💬 شاركوا بالشات وتفاعلوا وخلو المكان مليان طاقة جميلة.\n" +
+      "✨ وجودكم يصنع فرق بالسيرفر."
+    ).catch(function () {});
   }, 7200000);
 });
 
@@ -91,7 +98,7 @@ client.on("guildMemberAdd", async function (member) {
     ctx.fillStyle = "#ffffff";
     ctx.textAlign = "center";
 
-    ctx.font = "bold 46px Arial";
+    ctx.font = "bold 48px Arial";
     ctx.fillText(member.user.username, 512, 320);
 
     ctx.font = "bold 34px Arial";
@@ -106,8 +113,15 @@ client.on("guildMemberAdd", async function (member) {
 
     await channel.send({
       content:
-        member.toString() +
-        "\n\nياهلا والله 🤍\nنورت السيرفر واستمتع معنا.",
+        "╭・🎉・ياهلا والله " + member.toString() + "\n\n" +
+        "🤍 نورت السيرفر بالكامل، وجودك بيننا يسعدنا ويضيف جو رهيب للمكان.\n" +
+        "✨ نتمنى لك وقت ممتع، فعاليات، سوالف، ناس فخمة وتفاعل أسطوري.\n\n" +
+        "📜 لتجنب أي عقوبة أو مخالفة نرجو قراءة القوانين:\n" +
+        "<#" + RULES_CHANNEL_ID + ">\n\n" +
+        "💬 ولا تنسى تشارك بالشات وتتعرف على الأعضاء:\n" +
+        "<#" + CHAT_CHANNEL_ID + ">\n\n" +
+        "🔥 شد حيلك بالتفاعل ويمكن تصير من المشهورين بالسيرفر.\n" +
+        "🤍 استمتع معنا وخلك قريب من الجميع.",
       files: [attachment]
     });
   } catch (error) {
