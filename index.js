@@ -1,12 +1,26 @@
 const {
+  Client,
+  GatewayIntentBits,
+  Partials,
   AttachmentBuilder
 } = require("discord.js");
 
 const {
   createCanvas,
-  loadImage,
-  GlobalFonts
+  loadImage
 } = require("@napi-rs/canvas");
+
+const TOKEN = process.env.TOKEN;
+
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMembers
+  ],
+  partials: [Partials.Channel]
+});
 
 const WELCOME_CHANNEL_ID = "1481342024891371674";
 const AZKAR_CHANNEL_ID = "1376496339935952896";
@@ -16,14 +30,28 @@ const WELCOME_BACKGROUND =
 
 const azkarList = [
   "📿 سبحان الله وبحمده، سبحان الله العظيم.",
-  "🤍 لا إله إلا الله وحده لا شريك له، له الملك وله الحمد وهو على كل شيء قدير.",
+  "🤍 لا إله إلا الله وحده لا شريك له.",
   "📿 أستغفر الله العظيم وأتوب إليه.",
   "🤍 اللهم صل وسلم على نبينا محمد.",
   "📿 لا حول ولا قوة إلا بالله.",
-  "🤍 حسبي الله لا إله إلا هو عليه توكلت وهو رب العرش العظيم.",
-  "📿 سبحان الله، والحمد لله، ولا إله إلا الله، والله أكبر.",
-  "🤍 اللهم اجعل هذا اليوم خيراً، وراحة، وطمأنينة لكل من قرأ."
+  "🤍 حسبي الله ونعم الوكيل.",
+  "📿 سبحان الله، والحمد لله، والله أكبر.",
+  "🤍 الله يكتب لكم راحة وسعادة لا تنتهي."
 ];
+
+client.once("ready", function () {
+  console.log("Bot online: " + client.user.tag);
+
+  setInterval(async function () {
+    const channel = client.channels.cache.get(AZKAR_CHANNEL_ID);
+    if (!channel) return;
+
+    const random =
+      azkarList[Math.floor(Math.random() * azkarList.length)];
+
+    channel.send(random).catch(function () {});
+  }, 7200000);
+});
 
 client.on("guildMemberAdd", async function (member) {
   const channel = member.guild.channels.cache.get(WELCOME_CHANNEL_ID);
@@ -36,7 +64,7 @@ client.on("guildMemberAdd", async function (member) {
     const background = await loadImage(WELCOME_BACKGROUND);
     ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
+    ctx.fillStyle = "rgba(0,0,0,0.45)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const avatarURL = member.user.displayAvatarURL({
@@ -64,25 +92,22 @@ client.on("guildMemberAdd", async function (member) {
     ctx.textAlign = "center";
 
     ctx.font = "bold 46px Arial";
-    ctx.fillText(member.user.username, 512, 300);
+    ctx.fillText(member.user.username, 512, 320);
 
     ctx.font = "bold 34px Arial";
-    ctx.fillText("نورت السيرفر يا جميل 🤍", 512, 355);
+    ctx.fillText("نورت السيرفر يا جميل 🤍", 512, 380);
 
-    ctx.font = "26px Arial";
-    ctx.fillText("وجودك زاد المكان جمال، نتمنى لك وقت ممتع معنا", 512, 405);
-
-    const attachment = new AttachmentBuilder(await canvas.encode("png"), {
-      name: "welcome.png"
-    });
+    const attachment = new AttachmentBuilder(
+      await canvas.encode("png"),
+      {
+        name: "welcome.png"
+      }
+    );
 
     await channel.send({
       content:
         member.toString() +
-        "\n\n" +
-        "ياهلا والله 🤍\n" +
-        "نورت السيرفر، وجودك بيننا يسعدنا ويشرفنا.\n" +
-        "استمتع معنا، وخلّك قريب من الفعاليات والتبادل وكل جديد.",
+        "\n\nياهلا والله 🤍\nنورت السيرفر واستمتع معنا.",
       files: [attachment]
     });
   } catch (error) {
@@ -90,14 +115,4 @@ client.on("guildMemberAdd", async function (member) {
   }
 });
 
-client.once("ready", function () {
-  setInterval(async function () {
-    const channel = client.channels.cache.get(AZKAR_CHANNEL_ID);
-    if (!channel) return;
-
-    const random =
-      azkarList[Math.floor(Math.random() * azkarList.length)];
-
-    channel.send(random).catch(function () {});
-  }, 7200000);
-});
+client.login(TOKEN);
