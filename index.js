@@ -1,197 +1,180 @@
+client.on("messageCreate", async message => {
+
+if (message.author.bot) return;
+
+if (message.content === "قوانين") {
+
 const {
-  Client,
-  GatewayIntentBits,
-  AttachmentBuilder,
-  Partials
+EmbedBuilder,
+ActionRowBuilder,
+StringSelectMenuBuilder
 } = require("discord.js");
 
-const {
-  createCanvas,
-  loadImage
-} = require("@napi-rs/canvas");
+const rulesEmbed = new EmbedBuilder()
 
-const TOKEN = process.env.TOKEN;
+.setColor("#050505")
 
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
-  ],
-  partials: [Partials.Channel]
+.setAuthor({
+name: "R7 COMMUNITY",
+iconURL: client.user.displayAvatarURL()
+})
+
+.setTitle("📜 قوانين سيرفر R7 COMMUNITY")
+
+.setDescription(`
+> مرحبًا بك في **R7 COMMUNITY**
+> نرجو منك قراءة القوانين كاملة قبل التفاعل داخل السيرفر لتجنب أي مخالفة أو عقوبة.
+> هدفنا صناعة مجتمع احترافي، ممتع وآمن للجميع 🔥
+
+━━━━━━━━━━━━━━━━━━
+
+🧠 | **القوانين العامة**
+• احترام جميع الأعضاء واجب مهما كانت الرتبة أو العمر.  
+• يمنع السب، التنمر، الاستفزاز أو التقليل من الآخرين.  
+• يمنع نشر العنصرية أو الكلام المسيء للدين.  
+• يمنع التهديد أو التخويف أو إثارة المشاكل عمدًا.  
+• يمنع نشر معلومات شخصية لأي شخص بدون إذنه.  
+
+━━━━━━━━━━━━━━━━━━
+
+💬 | **قوانين الشات**
+• يمنع السبام، التكرار أو التخريب بالشاتات.  
+• استخدم كل روم في الغرض المخصص له فقط.  
+• يمنع إرسال روابط مشبوهة أو إعلانات بدون إذن.  
+• يمنع المحتوى غير اللائق أو المزعج.  
+• حافظ على أسلوبك وخل تفاعلك محترم 🔥
+
+━━━━━━━━━━━━━━━━━━
+
+🎤 | **قوانين الفويس**
+• يمنع الإزعاج أو تشغيل أصوات مزعجة.  
+• يمنع تخريب جلسات الفويس أو التشويش المتعمد.  
+• احترام الموجودين داخل الفويس إلزامي.  
+• يمنع تشغيل المقاطع المسيئة أو المخلة.  
+
+━━━━━━━━━━━━━━━━━━
+
+🛡️ | **قوانين الأمن**
+• يمنع انتحال شخصيات الإدارة أو الأعضاء.  
+• يمنع نشر أي ملفات أو روابط ضارة.  
+• أي محاولة تهكير أو تخريب تعرضك للباند النهائي.  
+• الحفاظ على حسابك مسؤوليتك الشخصية.  
+
+━━━━━━━━━━━━━━━━━━
+
+👑 | **قوانين الإدارة**
+• الإدارة موجودة لتنظيم السيرفر وليس للظلم.  
+• يمنع التقليل من الإدارة أو الاستهزاء بقراراتها.  
+• يمنع طلب الرتب أو الإزعاج عليها.  
+• إذا عندك مشكلة افتح تكت بكل احترام.  
+
+━━━━━━━━━━━━━━━━━━
+
+🔄 | **قوانين التبادل**
+• التبادل على مسؤوليتك الشخصية.  
+• يمنع النصب أو الاحتيال بجميع أنواعه.  
+• استخدم الوسطاء الرسميين عند الحاجة.  
+• يمنع سرقة العروض أو التخريب على الأعضاء.  
+• أي عملية نصب مثبتة = حظر نهائي بدون نقاش ⚠️
+
+━━━━━━━━━━━━━━━━━━
+
+📢 | **التفاعل والدعم**
+• تفاعلك يصنع مجتمع أقوى 🔥  
+• شارك بالشات والفويس والفعاليات.  
+• دعمك للسيرفر يساعدنا نقدم أنظمة وتطويرات أفضل.  
+• الأعضاء المتفاعلين يحصلون على مميزات مستقبلية 👀
+
+━━━━━━━━━━━━━━━━━━
+
+⚠️ | **مهم جدًا**
+> لتجنب أي عقوبة نرجو الالتزام الكامل بالقوانين.  
+> الإدارة لها الحق الكامل باتخاذ القرار المناسب للحفاظ على أمان المجتمع.
+
+━━━━━━━━━━━━━━━━━━
+
+✨ | **R7 COMMUNITY**
+مجتمع احترافي • فعاليات • تفاعل • تبادل • دعم • أمان 🔥
+`)
+
+.setImage("https://cdn.discordapp.com/attachments/1481671050671427746/1506254111199199332/D1F1417C-4103-40AA-AE79-198E1DDDA686.png?ex=6a0d97f4&is=6a0c4674&hm=6bc71ee83f18df591a6d2d0c49a83e8e7186beae6b7980177f77044db12af832&")
+
+.setFooter({
+text: "R7 COMMUNITY • Rules System",
+iconURL: client.user.displayAvatarURL()
+})
+
+.setTimestamp();
+
+const rulesMenu = new ActionRowBuilder().addComponents(
+
+new StringSelectMenuBuilder()
+
+.setCustomId("rules_menu")
+
+.setPlaceholder("📚 اختر قسم القوانين")
+
+.addOptions([
+
+{
+label: "القوانين العامة",
+description: "General Rules",
+value: "general",
+emoji: "📜"
+},
+
+{
+label: "قوانين الشات",
+description: "Chat Rules",
+value: "chat",
+emoji: "💬"
+},
+
+{
+label: "قوانين الفويس",
+description: "Voice Rules",
+value: "voice",
+emoji: "🎤"
+},
+
+{
+label: "قوانين الأمن",
+description: "Security Rules",
+value: "security",
+emoji: "🛡️"
+},
+
+{
+label: "قوانين الإدارة",
+description: "Staff Rules",
+value: "staff",
+emoji: "👑"
+},
+
+{
+label: "قوانين التبادل",
+description: "Trading Rules",
+value: "trade",
+emoji: "🔄"
+},
+
+{
+label: "قوانين إضافية",
+description: "Extra Rules",
+value: "extra",
+emoji: "⚠️"
+}
+
+])
+
+);
+
+message.channel.send({
+embeds: [rulesEmbed],
+components: [rulesMenu]
 });
 
-const WELCOME_CHANNEL_ID = "1481342024891371674";
-const RULES_CHANNEL_ID = "1481351750634963054";
-const CHAT_CHANNEL_ID = "1376496339935952896";
-
-const BACKGROUND =
-"https://cdn.discordapp.com/attachments/1481671050671427746/1504469636895477760/IMG_0964.jpg?ex=6a071a09&is=6a05c889&hm=8a4c62d8bf86c4c2d0a6e347f3d8af064eaccc61d80aaff8036c1b5dccd19d3c&";
-
-const reminders = [
-  "📿 سبحان الله وبحمده، سبحان الله العظيم.",
-  "🤍 اللهم صل وسلم على نبينا محمد.",
-  "📿 أستغفر الله العظيم وأتوب إليه.",
-  "🤍 لا حول ولا قوة إلا بالله.",
-  "📿 لا إله إلا الله وحده لا شريك له."
-];
-
-client.once("ready", function () {
-
-  console.log("Bot online: " + client.user.tag);
-
-  setInterval(async function () {
-
-    const channel =
-      client.channels.cache.get(CHAT_CHANNEL_ID);
-
-    if (!channel) return;
-
-    const random =
-      reminders[Math.floor(Math.random() * reminders.length)];
-
-    channel.send(
-      "╭・🌙・تذكير لطيف\n\n" +
-      random +
-      "\n\n🤍 لا تنسون الذكر والصلاة على النبي."
-    ).catch(function () {});
-
-  }, 7200000);
-
-});
-
-client.on("guildMemberAdd", async function (member) {
-
-  try {
-
-    const channel =
-      member.guild.channels.cache.get(WELCOME_CHANNEL_ID);
-
-    if (!channel) return;
-
-    const canvas =
-      createCanvas(1024, 500);
-
-    const ctx =
-      canvas.getContext("2d");
-
-    const background =
-      await loadImage(BACKGROUND);
-
-    ctx.drawImage(
-      background,
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
-
-    ctx.fillStyle =
-      "rgba(0,0,0,0.45)";
-
-    ctx.fillRect(
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
-
-    const avatar =
-      await loadImage(
-        member.user.displayAvatarURL({
-          extension: "png",
-          size: 512
-        })
-      );
-
-    ctx.save();
-
-    ctx.beginPath();
-
-    ctx.arc(
-      512,
-      170,
-      95,
-      0,
-      Math.PI * 2,
-      true
-    );
-
-    ctx.closePath();
-
-    ctx.clip();
-
-    ctx.drawImage(
-      avatar,
-      417,
-      75,
-      190,
-      190
-    );
-
-    ctx.restore();
-
-    ctx.beginPath();
-
-    ctx.arc(
-      512,
-      170,
-      100,
-      0,
-      Math.PI * 2,
-      true
-    );
-
-    ctx.lineWidth = 8;
-
-    ctx.strokeStyle = "#ffffff";
-
-    ctx.stroke();
-
-    ctx.fillStyle = "#ffffff";
-
-    ctx.textAlign = "center";
-
-    ctx.font = "bold 48px Arial";
-
-    ctx.fillText(
-      member.user.username,
-      512,
-      360
-    );
-
-    ctx.font = "bold 34px Arial";
-
-    ctx.fillText(
-      "نورت السيرفر يا جميل 🤍",
-      512,
-      420
-    );
-
-    const attachment =
-      new AttachmentBuilder(
-        await canvas.encode("png"),
-        {
-          name: "welcome.png"
-        }
-      );
-
-    channel.send({
-      content:
-        "╭・🎉・ياهلا والله " +
-        member.toString() +
-        "\n\n🤍 نورت السيرفر بالكامل.\n" +
-        "📜 القوانين: <#" + RULES_CHANNEL_ID + ">\n" +
-        "💬 الشات: <#" + CHAT_CHANNEL_ID + ">",
-      files: [attachment]
-    });
-
-  } catch (error) {
-
-    console.log(error);
-
-  }
+}
 
 });
 
