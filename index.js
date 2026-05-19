@@ -1,192 +1,216 @@
 const {
-Client,
-GatewayIntentBits,
-Partials,
-EmbedBuilder,
-ActionRowBuilder,
-StringSelectMenuBuilder
+  Client,
+  GatewayIntentBits,
+  Partials,
+  EmbedBuilder,
+  ActionRowBuilder,
+  StringSelectMenuBuilder
 } = require("discord.js");
 
 const client = new Client({
-intents: [
-GatewayIntentBits.Guilds,
-GatewayIntentBits.GuildMessages,
-GatewayIntentBits.MessageContent
-],
-partials: [Partials.Channel]
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent
+  ],
+  partials: [Partials.Channel]
+});
+
+const IMAGE_URL = "https://cdn.discordapp.com/attachments/1481671050671427746/1506254111199199332/D1F1417C-4103-40AA-AE79-198E1DDDA686.png?ex=6a0d97f4&is=6a0c4674&hm=6bc71ee83f18df591a6d2d0c49a83e8e7186beae6b7980177f77044db12af832&";
+
+client.once("ready", () => {
+  console.log("Bot online: " + client.user.tag);
 });
 
 client.on("messageCreate", async message => {
+  if (message.author.bot) return;
 
-if (message.author.bot) return;
+  if (message.content === "قوانين") {
+    const embed = new EmbedBuilder()
+      .setColor("#050505")
+      .setTitle("📜 قوانين سيرفر R7 COMMUNITY")
+      .setDescription(`
+> أهلاً بك في **R7 COMMUNITY**
+> الرجاء اختيار قسم القوانين من القائمة بالأسفل.
 
-if (message.content === "قوانين") {
+⚠️ عدم قراءة القوانين لا يعفيك من العقوبة.
+      `)
+      .setImage(IMAGE_URL)
+      .setFooter({
+        text: "R7 COMMUNITY • Rules System",
+        iconURL: client.user.displayAvatarURL()
+      });
 
-const rulesEmbed = new EmbedBuilder()
+    const menu = new ActionRowBuilder().addComponents(
+      new StringSelectMenuBuilder()
+        .setCustomId("rules_menu")
+        .setPlaceholder("📚 اختر قسم القوانين")
+        .addOptions([
+          { label: "القوانين العامة", value: "general", emoji: "📜" },
+          { label: "قوانين الشات", value: "chat", emoji: "💬" },
+          { label: "قوانين الفويس", value: "voice", emoji: "🎤" },
+          { label: "قوانين الأمن", value: "security", emoji: "🛡️" },
+          { label: "قوانين الإدارة", value: "staff", emoji: "👑" },
+          { label: "قوانين التبادل", value: "trade", emoji: "🔄" },
+          { label: "قوانين إضافية", value: "extra", emoji: "⚠️" }
+        ])
+    );
 
-.setColor("#050505")
-
-.setAuthor({
-name: "R7 COMMUNITY",
-iconURL: client.user.displayAvatarURL()
-})
-
-.setTitle("📜 قوانين سيرفر R7 COMMUNITY")
-
-.setDescription(`
-> مرحبًا بك في **R7 COMMUNITY**
-> نرجو منك قراءة القوانين كاملة قبل التفاعل داخل السيرفر لتجنب أي مخالفة أو عقوبة.
-> هدفنا صناعة مجتمع احترافي، ممتع وآمن للجميع 🔥
-
-━━━━━━━━━━━━━━━━━━
-
-🧠 | القوانين العامة
-• احترام جميع الأعضاء واجب مهما كانت الرتبة.  
-• يمنع السب، التنمر أو الاستفزاز.  
-• يمنع نشر العنصرية أو الكلام المسيء.  
-• يمنع نشر معلومات شخصية لأي شخص.  
-• يمنع إثارة المشاكل أو التهديد.  
-
-━━━━━━━━━━━━━━━━━━
-
-💬 | قوانين الشات
-• يمنع السبام والتكرار.  
-• استخدم كل روم بمحتواه الصحيح.  
-• يمنع إرسال روابط أو إعلانات بدون إذن.  
-• يمنع المحتوى غير اللائق أو المزعج.  
-• حافظ على أسلوب محترم داخل الشات.  
-
-━━━━━━━━━━━━━━━━━━
-
-🎤 | قوانين الفويس
-• يمنع الإزعاج أو الأصوات المزعجة.  
-• يمنع تخريب الفويسات.  
-• احترام الموجودين بالفويس إلزامي.  
-• يمنع تشغيل المقاطع المسيئة.  
-
-━━━━━━━━━━━━━━━━━━
-
-🛡️ | قوانين الأمن
-• يمنع انتحال الشخصيات.  
-• يمنع نشر أي روابط ضارة.  
-• أي محاولة تخريب تعرضك للباند النهائي.  
-• الحفاظ على حسابك مسؤوليتك الشخصية.  
-
-━━━━━━━━━━━━━━━━━━
-
-👑 | قوانين الإدارة
-• يمنع التقليل من الإدارة.  
-• يمنع طلب الرتب أو الإزعاج عليها.  
-• إذا عندك مشكلة افتح تكت باحترام.  
-• قرارات الإدارة للحفاظ على أمان السيرفر.  
-
-━━━━━━━━━━━━━━━━━━
-
-🔄 | قوانين التبادل
-• التبادل على مسؤوليتك الشخصية.  
-• يمنع النصب أو الاحتيال.  
-• استخدم الوسطاء الرسميين عند الحاجة.  
-• يمنع سرقة العروض أو التخريب.  
-• أي عملية نصب مثبتة = باند نهائي ⚠️
-
-━━━━━━━━━━━━━━━━━━
-
-📢 | التفاعل والدعم
-• تفاعلك يصنع مجتمع أقوى 🔥  
-• شارك بالشات والفويس والفعاليات.  
-• دعمك للسيرفر يساعدنا نقدم تطويرات أقوى.  
-
-━━━━━━━━━━━━━━━━━━
-
-⚠️ | مهم جدًا
-> لتجنب أي عقوبة نرجو الالتزام الكامل بالقوانين.
-> الإدارة لها الحق الكامل باتخاذ القرار المناسب للحفاظ على أمان المجتمع.
-
-━━━━━━━━━━━━━━━━━━
-
-✨ | R7 COMMUNITY
-مجتمع احترافي • فعاليات • تفاعل • تبادل • دعم • أمان 🔥
-`)
-
-.setImage("https://cdn.discordapp.com/attachments/1481671050671427746/1506254111199199332/D1F1417C-4103-40AA-AE79-198E1DDDA686.png?ex=6a0d97f4&is=6a0c4674&hm=6bc71ee83f18df591a6d2d0c49a83e8e7186beae6b7980177f77044db12af832&")
-
-.setFooter({
-text: "R7 COMMUNITY • Rules System",
-iconURL: client.user.displayAvatarURL()
-})
-
-.setTimestamp();
-
-const rulesMenu = new ActionRowBuilder().addComponents(
-
-new StringSelectMenuBuilder()
-
-.setCustomId("rules_menu")
-
-.setPlaceholder("📚 اختر قسم القوانين")
-
-.addOptions([
-
-{
-label: "القوانين العامة",
-description: "General Rules",
-value: "general",
-emoji: "📜"
-},
-
-{
-label: "قوانين الشات",
-description: "Chat Rules",
-value: "chat",
-emoji: "💬"
-},
-
-{
-label: "قوانين الفويس",
-description: "Voice Rules",
-value: "voice",
-emoji: "🎤"
-},
-
-{
-label: "قوانين الأمن",
-description: "Security Rules",
-value: "security",
-emoji: "🛡️"
-},
-
-{
-label: "قوانين الإدارة",
-description: "Staff Rules",
-value: "staff",
-emoji: "👑"
-},
-
-{
-label: "قوانين التبادل",
-description: "Trading Rules",
-value: "trade",
-emoji: "🔄"
-},
-
-{
-label: "قوانين إضافية",
-description: "Extra Rules",
-value: "extra",
-emoji: "⚠️"
-}
-
-])
-
-);
-
-message.channel.send({
-embeds: [rulesEmbed],
-components: [rulesMenu]
+    message.channel.send({
+      embeds: [embed],
+      components: [menu]
+    });
+  }
 });
 
-}
+client.on("interactionCreate", async interaction => {
+  if (!interaction.isStringSelectMenu()) return;
+  if (interaction.customId !== "rules_menu") return;
 
+  const choice = interaction.values[0];
+
+  const rules = {
+    general: {
+      title: "📜 القوانين العامة",
+      text: `
+• احترام جميع الأعضاء واجب مهما كانت الرتبة أو العمر.
+• يمنع السب أو الاستهزاء أو التقليل من أي عضو.
+• يمنع التنمر، الاستفزاز، أو محاولة إشعال المشاكل.
+• يمنع نشر العنصرية أو الطائفية أو الإساءة للدين.
+• يمنع التهديد أو التخويف بأي شكل.
+• يمنع نشر معلومات شخصية لأي شخص.
+• يمنع انتحال شخصية عضو أو إداري.
+• يمنع استخدام أسماء أو صور مخالفة.
+• يمنع نشر محتوى غير مناسب.
+• الإدارة لها الحق في اتخاذ العقوبة المناسبة حسب الحالة.
+
+⚠️ دخولك للسيرفر يعني موافقتك على القوانين.
+`
+    },
+
+    chat: {
+      title: "💬 قوانين الشات",
+      text: `
+• يمنع السبام والتكرار المزعج.
+• يمنع إرسال نفس الرسالة أكثر من مرة.
+• استخدم كل روم لغرضه الصحيح.
+• يمنع الإعلانات أو الروابط بدون إذن.
+• يمنع نشر روابط مشبوهة أو ملفات خطيرة.
+• يمنع الكلام الخارج أو المحتوى غير اللائق.
+• يمنع الإزعاج بالمنشن المتكرر.
+• يمنع إثارة النقاشات الحساسة أو المشاكل.
+• حافظ على أسلوب محترم مع الجميع.
+• أي تخريب متعمد يعرضك للعقوبة.
+
+🔥 الشات للتفاعل، الضحك، الفعاليات، والسوالف الجميلة.
+`
+    },
+
+    voice: {
+      title: "🎤 قوانين الفويس",
+      text: `
+• يمنع تشغيل أصوات مزعجة أو عالية.
+• يمنع تخريب الفويس أو التشويش على الأعضاء.
+• يمنع دخول الفويس فقط للإزعاج.
+• يمنع تشغيل مقاطع مسيئة أو غير لائقة.
+• يمنع السب أو الاستفزاز داخل الفويس.
+• احترام الموجودين بالفويس إلزامي.
+• يمنع استخدام برامج تغيير الصوت للإزعاج.
+• يمنع تسجيل الأعضاء بدون إذن.
+• أي إزعاج متكرر يؤدي لميوت أو عقوبة.
+
+🎧 الفويس مكان للوناسة، مو للمشاكل.
+`
+    },
+
+    security: {
+      title: "🛡️ قوانين الأمن",
+      text: `
+• يمنع نشر روابط اختراق أو ملفات ضارة.
+• يمنع محاولة تهكير أو تخريب السيرفر.
+• يمنع انتحال الإدارة أو البوتات.
+• يمنع إرسال روابط ديسكورد مشبوهة.
+• لا تشارك معلومات حسابك مع أي شخص.
+• الإدارة لا تطلب كلمة مرورك أبدًا.
+• أي محاولة نصب أو تهديد = باند.
+• حماية حسابك مسؤوليتك الشخصية.
+• البلاغ عن أي شخص مشبوه يكون عبر التكت.
+
+🛡️ الأمان أهم شيء داخل R7 COMMUNITY.
+`
+    },
+
+    staff: {
+      title: "👑 قوانين الإدارة",
+      text: `
+• احترام الإدارة واجب.
+• يمنع الاستهزاء بقرارات الإدارة.
+• يمنع طلب الرتب أو الإزعاج عليها.
+• إذا عندك شكوى افتح تكت باحترام.
+• الإدارة تتعامل حسب القوانين والموقف.
+• يمنع الكذب على الإدارة.
+• يمنع محاولة استفزاز الإداريين.
+• قرارات الإدارة هدفها حماية السيرفر.
+• أي إساءة للإدارة قد تعرضك للعقوبة.
+• لا تناقش العقوبة في العام، افتح تكت.
+
+👑 الإدارة لخدمة وتنظيم المجتمع.
+`
+    },
+
+    trade: {
+      title: "🔄 قوانين التبادل",
+      text: `
+• التبادل على مسؤوليتك الشخصية.
+• يمنع النصب أو الاحتيال بأي شكل.
+• استخدم وسيط رسمي إذا الصفقة مهمة.
+• يمنع سرقة عروض الأعضاء.
+• يمنع التخريب على عروض الآخرين.
+• يمنع إرسال عروض وهمية.
+• يمنع التلاعب أو الكذب في التبادل.
+• أي نصب مثبت = باند نهائي.
+• الإدارة غير مسؤولة عن تبادل خارج النظام.
+• التزم برومات التبادل المخصصة.
+
+⚠️ لا تثق بأي شخص بدون ضمان أو وسيط.
+`
+    },
+
+    extra: {
+      title: "⚠️ قوانين إضافية",
+      text: `
+• يمنع استغلال الثغرات أو الأخطاء.
+• يمنع التحايل على العقوبات.
+• يمنع الدخول بحسابات بديلة لتجنب العقوبة.
+• يمنع نشر الشائعات أو تشويه سمعة السيرفر.
+• يمنع طلب الخاص بشكل مزعج.
+• يمنع نشر محتوى مخالف للديسكورد.
+• يمنع إساءة استخدام البوتات.
+• يمنع تخريب الفعاليات.
+• دعمك وتفاعلك يساعدنا نطور السيرفر أكثر.
+• العضو المحترم والمتفاعل له مكانة خاصة عندنا.
+
+✨ خلك عضو أسطوري، واترك بصمة جميلة بالسيرفر.
+`
+    }
+  };
+
+  const selected = rules[choice];
+
+  const embed = new EmbedBuilder()
+    .setColor("#050505")
+    .setTitle(selected.title)
+    .setDescription(selected.text)
+    .setFooter({
+      text: "R7 COMMUNITY • Rules System",
+      iconURL: client.user.displayAvatarURL()
+    })
+    .setTimestamp();
+
+  interaction.reply({
+    embeds: [embed],
+    ephemeral: true
+  });
 });
 
 client.login(process.env.TOKEN);
