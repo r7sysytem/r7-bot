@@ -4,7 +4,10 @@ const {
   Partials,
   EmbedBuilder,
   ActionRowBuilder,
-  StringSelectMenuBuilder
+  StringSelectMenuBuilder,
+  SlashCommandBuilder,
+  REST,
+  Routes
 } = require("discord.js");
 
 const client = new Client({
@@ -18,61 +21,78 @@ const client = new Client({
 
 const IMAGE_URL = "https://cdn.discordapp.com/attachments/1481671050671427746/1506254111199199332/D1F1417C-4103-40AA-AE79-198E1DDDA686.png?ex=6a0d97f4&is=6a0c4674&hm=6bc71ee83f18df591a6d2d0c49a83e8e7186beae6b7980177f77044db12af832&";
 
-client.once("ready", () => {
+const commands = [
+  new SlashCommandBuilder()
+    .setName("rules")
+    .setDescription("يعرض قوانين السيرفر")
+].map(command => command.toJSON());
+
+client.once("ready", async () => {
   console.log("Bot online: " + client.user.tag);
+
+  const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
+
+  await rest.put(
+    Routes.applicationCommands(client.user.id),
+    { body: commands }
+  );
+
+  console.log("Slash command /rules registered");
 });
 
-client.on("messageCreate", async message => {
-  if (message.author.bot) return;
+client.on("interactionCreate", async interaction => {
 
-  if (message.content === "قوانين") {
-    const embed = new EmbedBuilder()
-      .setColor("#050505")
-      .setTitle("📜 قوانين سيرفر R7 COMMUNITY")
-      .setDescription(`
+  if (interaction.isChatInputCommand()) {
+
+    if (interaction.commandName === "rules") {
+
+      const embed = new EmbedBuilder()
+        .setColor("#050505")
+        .setTitle("📜 قوانين سيرفر R7 COMMUNITY")
+        .setDescription(`
 > أهلاً بك في **R7 COMMUNITY**
 > الرجاء اختيار قسم القوانين من القائمة بالأسفل.
 
 ⚠️ عدم قراءة القوانين لا يعفيك من العقوبة.
-      `)
-      .setImage(IMAGE_URL)
-      .setFooter({
-        text: "R7 COMMUNITY • Rules System",
-        iconURL: client.user.displayAvatarURL()
+        `)
+        .setImage(IMAGE_URL)
+        .setFooter({
+          text: "R7 COMMUNITY • Rules System",
+          iconURL: client.user.displayAvatarURL()
+        });
+
+      const menu = new ActionRowBuilder().addComponents(
+        new StringSelectMenuBuilder()
+          .setCustomId("rules_menu")
+          .setPlaceholder("📚 اختر قسم القوانين")
+          .addOptions([
+            { label: "القوانين العامة", value: "general", emoji: "📜" },
+            { label: "قوانين الشات", value: "chat", emoji: "💬" },
+            { label: "قوانين الفويس", value: "voice", emoji: "🎤" },
+            { label: "قوانين الأمن", value: "security", emoji: "🛡️" },
+            { label: "قوانين الإدارة", value: "staff", emoji: "👑" },
+            { label: "قوانين التبادل", value: "trade", emoji: "🔄" },
+            { label: "قوانين إضافية", value: "extra", emoji: "⚠️" }
+          ])
+      );
+
+      await interaction.reply({
+        embeds: [embed],
+        components: [menu]
       });
+    }
 
-    const menu = new ActionRowBuilder().addComponents(
-      new StringSelectMenuBuilder()
-        .setCustomId("rules_menu")
-        .setPlaceholder("📚 اختر قسم القوانين")
-        .addOptions([
-          { label: "القوانين العامة", value: "general", emoji: "📜" },
-          { label: "قوانين الشات", value: "chat", emoji: "💬" },
-          { label: "قوانين الفويس", value: "voice", emoji: "🎤" },
-          { label: "قوانين الأمن", value: "security", emoji: "🛡️" },
-          { label: "قوانين الإدارة", value: "staff", emoji: "👑" },
-          { label: "قوانين التبادل", value: "trade", emoji: "🔄" },
-          { label: "قوانين إضافية", value: "extra", emoji: "⚠️" }
-        ])
-    );
-
-    message.channel.send({
-      embeds: [embed],
-      components: [menu]
-    });
+    return;
   }
-});
 
-client.on("interactionCreate", async interaction => {
-  if (!interaction.isStringSelectMenu()) return;
-  if (interaction.customId !== "rules_menu") return;
+  if (interaction.isStringSelectMenu()) {
 
-  const choice = interaction.values[0];
+    if (interaction.customId !== "rules_menu") return;
 
-  const rules = {
-    general: {
-      title: "📜 القوانين العامة",
-      text: `
+    const rules = {
+      general: {
+        title: "📜 القوانين العامة",
+        text: `
 • احترام جميع الأعضاء واجب مهما كانت الرتبة أو العمر.
 • يمنع السب أو الاستهزاء أو التقليل من أي عضو.
 • يمنع التنمر، الاستفزاز، أو محاولة إشعال المشاكل.
@@ -86,11 +106,11 @@ client.on("interactionCreate", async interaction => {
 
 ⚠️ دخولك للسيرفر يعني موافقتك على القوانين.
 `
-    },
+      },
 
-    chat: {
-      title: "💬 قوانين الشات",
-      text: `
+      chat: {
+        title: "💬 قوانين الشات",
+        text: `
 • يمنع السبام والتكرار المزعج.
 • يمنع إرسال نفس الرسالة أكثر من مرة.
 • استخدم كل روم لغرضه الصحيح.
@@ -104,11 +124,11 @@ client.on("interactionCreate", async interaction => {
 
 🔥 الشات للتفاعل، الضحك، الفعاليات، والسوالف الجميلة.
 `
-    },
+      },
 
-    voice: {
-      title: "🎤 قوانين الفويس",
-      text: `
+      voice: {
+        title: "🎤 قوانين الفويس",
+        text: `
 • يمنع تشغيل أصوات مزعجة أو عالية.
 • يمنع تخريب الفويس أو التشويش على الأعضاء.
 • يمنع دخول الفويس فقط للإزعاج.
@@ -121,11 +141,11 @@ client.on("interactionCreate", async interaction => {
 
 🎧 الفويس مكان للوناسة، مو للمشاكل.
 `
-    },
+      },
 
-    security: {
-      title: "🛡️ قوانين الأمن",
-      text: `
+      security: {
+        title: "🛡️ قوانين الأمن",
+        text: `
 • يمنع نشر روابط اختراق أو ملفات ضارة.
 • يمنع محاولة تهكير أو تخريب السيرفر.
 • يمنع انتحال الإدارة أو البوتات.
@@ -138,11 +158,11 @@ client.on("interactionCreate", async interaction => {
 
 🛡️ الأمان أهم شيء داخل R7 COMMUNITY.
 `
-    },
+      },
 
-    staff: {
-      title: "👑 قوانين الإدارة",
-      text: `
+      staff: {
+        title: "👑 قوانين الإدارة",
+        text: `
 • احترام الإدارة واجب.
 • يمنع الاستهزاء بقرارات الإدارة.
 • يمنع طلب الرتب أو الإزعاج عليها.
@@ -156,11 +176,11 @@ client.on("interactionCreate", async interaction => {
 
 👑 الإدارة لخدمة وتنظيم المجتمع.
 `
-    },
+      },
 
-    trade: {
-      title: "🔄 قوانين التبادل",
-      text: `
+      trade: {
+        title: "🔄 قوانين التبادل",
+        text: `
 • التبادل على مسؤوليتك الشخصية.
 • يمنع النصب أو الاحتيال بأي شكل.
 • استخدم وسيط رسمي إذا الصفقة مهمة.
@@ -174,11 +194,11 @@ client.on("interactionCreate", async interaction => {
 
 ⚠️ لا تثق بأي شخص بدون ضمان أو وسيط.
 `
-    },
+      },
 
-    extra: {
-      title: "⚠️ قوانين إضافية",
-      text: `
+      extra: {
+        title: "⚠️ قوانين إضافية",
+        text: `
 • يمنع استغلال الثغرات أو الأخطاء.
 • يمنع التحايل على العقوبات.
 • يمنع الدخول بحسابات بديلة لتجنب العقوبة.
@@ -192,25 +212,26 @@ client.on("interactionCreate", async interaction => {
 
 ✨ خلك عضو أسطوري، واترك بصمة جميلة بالسيرفر.
 `
-    }
-  };
+      }
+    };
 
-  const selected = rules[choice];
+    const selected = rules[interaction.values[0]];
 
-  const embed = new EmbedBuilder()
-    .setColor("#050505")
-    .setTitle(selected.title)
-    .setDescription(selected.text)
-    .setFooter({
-      text: "R7 COMMUNITY • Rules System",
-      iconURL: client.user.displayAvatarURL()
-    })
-    .setTimestamp();
+    const embed = new EmbedBuilder()
+      .setColor("#050505")
+      .setTitle(selected.title)
+      .setDescription(selected.text)
+      .setFooter({
+        text: "R7 COMMUNITY • Rules System",
+        iconURL: client.user.displayAvatarURL()
+      })
+      .setTimestamp();
 
-  interaction.reply({
-    embeds: [embed],
-    ephemeral: true
-  });
+    await interaction.reply({
+      embeds: [embed],
+      ephemeral: true
+    });
+  }
 });
 
 client.login(process.env.TOKEN);
